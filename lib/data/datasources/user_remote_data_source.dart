@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:unifi_exams/core/error/failures.dart';
 
 import '../models/user_model.dart';
 
@@ -31,8 +32,22 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
   @override
   Future<void> addUser(UserModel user) async {
-    final response = await dio.post('/users', data: user.toJson());
-    if (response.statusCode != 201) {
+    try {
+      await dio.post('/users', data: user.toJson());
+    } on DioException catch (e) {
+      // Check if the error is a 422 Unprocessable Entity
+      if (e.response?.statusCode == 422) {
+        // Check if the response body indicates a duplicate email
+        final responseData = e.response?.data as List?;
+        if (responseData != null && responseData.isNotEmpty) {
+          final error = responseData.first as Map<String, dynamic>;
+          if (error['field'] == 'email' && error['message'].contains('has already been taken')) {
+            // If it is, throw our specific exception
+            throw DuplicateEmailFailure();
+          }
+        }
+      }
+      // For all other errors, throw the generic ServerException
       throw ServerException();
     }
   }

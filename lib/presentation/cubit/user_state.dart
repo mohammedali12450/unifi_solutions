@@ -40,3 +40,7 @@ class UserError extends UserState {
 }
 
 class UserAdded extends UserState {}
+
+class UserSubmitting extends UserState {}
+
+class UserSubmitSuccess extends UserState {}

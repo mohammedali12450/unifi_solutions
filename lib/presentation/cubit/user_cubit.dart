@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unifi_exams/presentation/cubit/user_state.dart';
 
+import '../../core/error/failures.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/add_user.dart';
 import '../../domain/usecases/get_users.dart';
@@ -45,9 +46,18 @@ class UserCubit extends Cubit<UserState> {
     emit(UserLoading());
     final result = await addUser(user);
     result.fold(
-          (failure) => emit(UserError('Failed to add user')),
+          (failure) {
+        // Check for the specific failure type
+        if (failure is DuplicateEmailFailure) {
+          emit(UserError('This email has already been taken. Please use another.'));
+        } else {
+          // Handle other failures
+          emit(UserError('Failed to add user. Please try again.'));
+        }
+      },
           (_) {
-        emit(UserAdded());
+        // On success, emit a success state and then refresh the list
+        emit(UserSubmitSuccess());
         refreshUsers();
       },
     );

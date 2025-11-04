@@ -33,7 +33,11 @@ class UserRepositoryImpl implements UserRepository {
       );
       await remoteDataSource.addUser(userModel);
       return const Right(null);
+    }  on DuplicateEmailFailure {
+      // Catch the specific exception and return the specific failure
+      return Left(DuplicateEmailFailure());
     } on ServerException {
+      // Catch all other server exceptions
       return Left(ServerFailure());
     }
   }
