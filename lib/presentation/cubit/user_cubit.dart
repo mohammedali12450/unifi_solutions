@@ -14,32 +14,56 @@ class UserCubit extends Cubit<UserState> {
 
   UserCubit({required this.getUsers, required this.addUser}) : super(UserInitial());
 
-  Future<void> fetchUsers() async {
-    if (state is UserLoading) return;
-
-    final currentState = state;
-    List<User> oldUsers = [];
-    if (currentState is UserLoaded) {
-      oldUsers = currentState.users;
-    }
-
+  Future<void> initialFetch() async {
+    // It simply calls our main fetchPage method with page number 1.
+    await fetchPage(1);
+  }
+  Future<void> fetchPage(int page) async {
     emit(UserLoading());
-
-    final result = await getUsers(_page, _perPage);
+    final result = await getUsers(page, _perPage);
     result.fold(
-          (failure) => emit(UserError('Failed to fetch users')),
-          (newUsers) {
-        _page++;
-        final users = oldUsers + newUsers;
-        emit(UserLoaded(users: users, hasReachedMax: newUsers.isEmpty));
+          (failure) {
+        if (failure is CacheFailure) {
+          emit(UserError('You are offline and have no cached data.'));
+        } else {
+          emit(UserError('Failed to fetch users'));
+        }
+      },
+          (paginatedUsers) {
+        emit(UserLoaded(
+          users: paginatedUsers.users,
+          currentPage: page,
+          totalPages: paginatedUsers.totalPages,
+        ));
       },
     );
   }
+  // Future<void> fetchUsers() async {
+  //   if (state is UserLoading) return;
+  //
+  //   final currentState = state;
+  //   List<User> oldUsers = [];
+  //   if (currentState is UserLoaded) {
+  //     oldUsers = currentState.users;
+  //   }
+  //
+  //   emit(UserLoading());
+  //
+  //   final result = await getUsers(_page, _perPage);
+  //   result.fold(
+  //         (failure) => emit(UserError('Failed to fetch users')),
+  //         (newUsers) {
+  //       _page++;
+  //       final users = oldUsers + newUsers;
+  //       emit(UserLoaded(users: users, hasReachedMax: newUsers.isEmpty));
+  //     },
+  //   );
+  // }
 
   Future<void> refreshUsers() async {
     _page = 1;
     emit(UserInitial());
-    await fetchUsers();
+    await fetchPage(_page);
   }
 
   Future<void> createUser(User user) async {

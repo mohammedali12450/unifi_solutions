@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:unifi_exams/core/error/failures.dart';
+import 'package:unifi_exams/domain/entities/paginated_users.dart';
 
+import '../models/paginated_users_response.dart';
 import '../models/user_model.dart';
 
 abstract class UserRemoteDataSource {
-  Future<List<UserModel>> getUsers(int page, int perPage);
+  Future<PaginatedUsersResponse> getUsers(int page, int perPage);
   Future<void> addUser(UserModel user);
 }
 
@@ -14,18 +16,31 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   UserRemoteDataSourceImpl({required this.dio});
 
   @override
-  Future<List<UserModel>> getUsers(int page, int perPage) async {
-    final response = await dio.get(
-      '/users',
-      queryParameters: {'page': page, 'per_page': perPage},
-    );
+  Future<PaginatedUsersResponse> getUsers(int page, int perPage) async {
+    // 1. Wrap the entire network operation in a try/catch block.
+    try {
+      final response = await dio.get(
+        '/users',
+        queryParameters: {'page': page, 'per_page': perPage},
+      );
 
-    if (response.statusCode == 200) {
-      final users = (response.data as List)
-          .map((user) => UserModel.fromJson(user))
+      final userModels = (response.data as List)
+          .map((userJson) => UserModel.fromJson(userJson))
           .toList();
-      return users;
-    } else {
+
+      final totalPages = int.tryParse(response.headers.value('x-pagination-pages') ?? '1') ?? 1;
+
+      return PaginatedUsersResponse(
+        users: userModels,
+        totalPages: totalPages,
+      );
+    } on DioException catch (e) {
+      // 2. Catch the specific DioException.
+      // You can add more logic here to inspect e.type or e.response
+      // if you want to differentiate between connection errors, timeouts, etc.
+
+      // 3. Throw your custom ServerException. This "translates" the error
+      //    into something the repository knows how to handle.
       throw ServerException();
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../platform/device_storage_channel.dart';
+import '../../platform/native_toast_channel.dart';
 import '../../platform/permission_handler_channel.dart';
 
 class NativeIntegrationScreen extends StatefulWidget {
@@ -13,7 +14,7 @@ class NativeIntegrationScreen extends StatefulWidget {
 class _NativeIntegrationScreenState extends State<NativeIntegrationScreen> {
   final DeviceStorageChannel _storageChannel = DeviceStorageChannel();
   final PermissionHandlerChannel _permissionChannel = PermissionHandlerChannel();
-
+  final NativeToastChannel _toastChannel = NativeToastChannel();
   String _storageInfo = 'Press button to get storage info';
   String _permissionStatus = 'Press button to request camera permission';
 
@@ -69,6 +70,18 @@ class _NativeIntegrationScreenState extends State<NativeIntegrationScreen> {
               ElevatedButton(
                 onPressed: _requestPermission,
                 child: const Text('Request Camera Permission'),
+              ),
+              const Divider(height: 40),
+
+              // --- 3. Add the UI for the Native Toast Bonus Task ---
+              const Text('Bonus: Native Toast', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () {
+                  // 4. Call the method on our channel class instance
+                  _toastChannel.showToast('This is a native message!');
+                },
+                child: const Text('Show Native Message'),
               ),
             ],
           ),

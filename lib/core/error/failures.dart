@@ -33,3 +33,4 @@ class NetworkFailure extends Failure {
 class DuplicateEmailFailure extends Failure {}
 
 class InvalidTokenFailure extends Failure {}
+class CacheException implements Exception {}

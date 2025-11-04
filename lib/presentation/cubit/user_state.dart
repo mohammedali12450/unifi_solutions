@@ -15,19 +15,17 @@ class UserLoading extends UserState {}
 
 class UserLoaded extends UserState {
   final List<User> users;
-  final bool hasReachedMax;
+  final int currentPage;
+  final int totalPages;
 
-  const UserLoaded({required this.users, this.hasReachedMax = false});
-
-  UserLoaded copyWith({List<User>? users, bool? hasReachedMax}) {
-    return UserLoaded(
-      users: users ?? this.users,
-      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
-    );
-  }
+  const UserLoaded({
+    required this.users,
+    required this.currentPage,
+    required this.totalPages,
+  });
 
   @override
-  List<Object> get props => [users, hasReachedMax];
+  List<Object> get props => [users, currentPage, totalPages];
 }
 
 class UserError extends UserState {

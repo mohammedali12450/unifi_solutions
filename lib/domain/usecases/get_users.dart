@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:unifi_exams/domain/entities/paginated_users.dart';
 
 import '../../core/error/failures.dart';
 import '../entities/user.dart';
@@ -9,7 +10,7 @@ class GetUsers {
 
   GetUsers(this.repository);
 
-  Future<Either<Failure, List<User>>> call(int page, int perPage) {
+  Future<Either<Failure, PaginatedUsers>> call(int page, int perPage) {
     return repository.getUsers(page, perPage);
   }
 }
