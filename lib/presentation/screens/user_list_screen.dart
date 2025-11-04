@@ -25,10 +25,23 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Users')),
+      appBar: AppBar(
+        title: const Text('Users'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.developer_mode),
+            tooltip: 'Native Features',
+            onPressed: () {
+              // Use GoRouter to navigate to the new screen
+              context.push('/native');
+            },
+          ),
+        ],
+      ),
       body: BlocBuilder<UserCubit, UserState>(
         builder: (context, state) {
-          if (state is UserInitial || (state is UserLoading && state is! UserLoaded)) {
+          if (state is UserInitial ||
+              (state is UserLoading && state is! UserLoaded)) {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is UserError) {
